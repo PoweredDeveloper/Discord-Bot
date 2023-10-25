@@ -14,9 +14,6 @@ module.exports = {
 		},
 	],
 
-	devOnly: true,
-	testOnly: true,
-
 	/**
 	 * @param {Client} client
 	 * @param {Interaction} interaction
@@ -31,14 +28,6 @@ module.exports = {
 		if (targetUser.user.bot) {
 			interaction.editReply('❌  Вы не можете просмотреть информацию о боте')
 			return
-		}
-
-		const activityField = {
-			name: 'Активность',
-			value: targetUser.presence
-				? `ㅤ  ${activityTypes[targetUser.presence.activities[0].type]} **${targetUser.presence.activities[0].name}**`
-				: 'Нет',
-			inline: true,
 		}
 
 		const rolesOfTheMember =
@@ -63,49 +52,50 @@ module.exports = {
 			}
 		})
 
+		let fields = [
+			{
+				name: 'Общая информация',
+				value: `ㅤ  Имя: ${targetUser.displayName} [${
+					targetUser.user.tag
+				}]\n\nㅤ  На сервере с: *${targetUser.joinedAt.toLocaleString('ru', {
+					day: '2-digit',
+					month: 'short',
+					year: 'numeric',
+					hour: '2-digit',
+					minute: '2-digit',
+				})}*\nㅤ  В Дискорде с: *${targetUser.user.createdAt.toLocaleString('ru', {
+					day: '2-digit',
+					month: 'short',
+					year: 'numeric',
+					hour: '2-digit',
+					minute: '2-digit',
+				})}*\n`,
+				inline: false,
+			},
+			{
+				name: 'Статус',
+				value: `ㅤ  ${presenceStateTypes[targetUser.presence ? targetUser.presence.status : 'invisible']}`,
+				inline: true,
+			},
+			{
+				name: 'Уровень',
+				value: `ㅤ  ✨  Уровень: ${fetchedLevel.level}\nㅤ  💫  Xp: ${fetchedLevel.xp}/${calculateLevelXp(
+					fetchedLevel.level
+				)}\nㅤ  Ранг: ${curentRank}`,
+				inline: true,
+			},
+			{
+				name: `Роли [${targetUser.roles.cache.size - 1}]`,
+				value: rolesOfTheMember,
+				inline: false,
+			},
+		]
+
 		const embedUserInfo = new EmbedBuilder()
 			.setTitle(`Информация о ${targetUser.displayName}`)
 			.setColor(targetUser.displayColor || 'Blurple')
 			.setThumbnail(targetUser.displayAvatarURL({ size: 2048 }))
-			.setFields(
-				{
-					name: 'Общая информация',
-					value: `ㅤ  Имя: ${targetUser.displayName} [${
-						targetUser.user.tag
-					}]\n\nㅤ  На сервере с: *${targetUser.joinedAt.toLocaleString('ru', {
-						day: '2-digit',
-						month: 'short',
-						year: 'numeric',
-						hour: '2-digit',
-						minute: '2-digit',
-					})}*\nㅤ  В Дискорде с: *${targetUser.user.createdAt.toLocaleString('ru', {
-						day: '2-digit',
-						month: 'short',
-						year: 'numeric',
-						hour: '2-digit',
-						minute: '2-digit',
-					})}*\n`,
-					inline: false,
-				},
-				{
-					name: 'Статус',
-					value: `ㅤ  ${presenceStateTypes[targetUser.presence ? targetUser.presence.status : 'invisible']}`,
-					inline: true,
-				},
-				activityField,
-				{
-					name: `Роли [${targetUser.roles.cache.size - 1}]`,
-					value: rolesOfTheMember,
-					inline: false,
-				},
-				{
-					name: 'Уровень',
-					value: `ㅤ  ✨  Уровень: ${fetchedLevel.level}\nㅤ  💫  Xp: ${fetchedLevel.xp}/${calculateLevelXp(
-						fetchedLevel.level
-					)} (Осталось: ${calculateLevelXp(fetchedLevel.level) - fetchedLevel.xp})\nㅤ  Ранг: ${curentRank}`,
-					inline: false,
-				}
-			)
+			.setFields(...fields)
 			.setFooter({ text: `ID: ${targetUserId}` })
 
 		interaction.editReply({ embeds: [embedUserInfo] })
