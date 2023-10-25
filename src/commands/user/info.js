@@ -41,16 +41,6 @@ module.exports = {
 			userId: targetUserId,
 			guildId: interaction.guild.id,
 		})
-		let allLevels = await Level.find({ guildId: interaction.guild.id }).select('-_id userId level xp')
-		let curentRank = allLevels.findIndex((lvl) => lvl.userId === targetUserId) + 1
-
-		allLevels.sort((a, b) => {
-			if (a.level == b.level) {
-				return b.xp - a.xp
-			} else {
-				return b.level - a.level
-			}
-		})
 
 		let fields = [
 			{
@@ -81,7 +71,7 @@ module.exports = {
 				name: 'Уровень',
 				value: `ㅤ  ✨  Уровень: ${fetchedLevel.level}\nㅤ  💫  Xp: ${fetchedLevel.xp}/${calculateLevelXp(
 					fetchedLevel.level
-				)}\nㅤ  Ранг: ${curentRank}`,
+				)}`,
 				inline: true,
 			},
 			{
